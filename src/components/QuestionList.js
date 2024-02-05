@@ -11,6 +11,33 @@ function QuestionList() {
       .catch((error) => console.error('Error fetching questions:', error));
   }, []);
 
+  const handleAnswerChange = (id, newCorrectIndex) => {
+    const updatedQuestion = {
+      ...questions.find((q) => q.id === id),
+      correctIndex: newCorrectIndex,
+    };
+    fetch(`http://localhost:4000/questions/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        correctIndex: newCorrectIndex,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          setQuestions(
+            questions.map((q) => (q.id === id ? updatedQuestion : q))
+          );
+        } else {
+          throw new Error('Error updating question');
+        }
+      })
+      .catch((error) => {
+        console.error('Error updating question:', error);
+      });
+  };
 
   function handleDeleteQuestion(id) {
     fetch(`http://localhost:4000/questions/${id}`, {
@@ -31,6 +58,9 @@ function QuestionList() {
           <QuestionItem
             key={question.id}
             question={question}
+            onAnswerChange={(newCorrectIndex) =>
+              handleAnswerChange(question.id, newCorrectIndex)
+            }
             onDelete={() => handleDeleteQuestion(question.id)}
           />
         ))}
