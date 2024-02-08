@@ -1,19 +1,39 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 function QuestionForm(props) {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     prompt: '',
     answers: ['', '', '', ''],
     correctIndex: 0,
-  });
+  };
 
-  function handleChange(event) {
+  const [formData, setFormData] = useState(initialFormData);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    if (name === 'prompt') {
+      setFormData({
+        ...formData,
+        prompt: value,
+      });
+    } else if (name.startsWith('answers')) {
+      const index = parseInt(name.match(/\d+/)[0], 10);
+      const updatedAnswers = [...formData.answers];
+      updatedAnswers[index] = value;
+
+      setFormData({
+        ...formData,
+        answers: updatedAnswers,
+      });
+    }
+  }
+
+  function handleAnswerChange(e) {
+    const newCorrectIndex = parseInt(e.target.value, 10);
     setFormData({
       ...formData,
-      [event.target.name]:
-        event.target.type === 'checkbox'
-          ? event.target.checked
-          : event.target.value,
+      correctIndex: newCorrectIndex,
     });
   }
 
@@ -66,24 +86,21 @@ function QuestionForm(props) {
               type='text'
               name={`answers[${index}]`}
               value={answer}
-              onChange={(e) => {
-                const newAnswers = [...formData.answers];
-                newAnswers[index] = e.target.value;
-                setFormData({ ...formData, answers: newAnswers });
-              }}
-            />
-            <input
-              type='checkbox'
-              name={`correctIndex[${index}]`}
-              checked={index === formData.correctIndex}
-              onChange={() => {
-                const newCorrectIndex =
-                  index === formData.correctIndex ? -1 : index;
-                setFormData({ ...formData, correctIndex: newCorrectIndex });
-              }}
+              onChange={handleChange}
             />
           </label>
         ))}
+        <label>
+          Correct Answer:
+          <select value={formData.correctIndex} onChange={handleAnswerChange}>
+            <option value='-1'>Select</option>
+            {formData.answers.map((answer, index) => (
+              <option key={index} value={index}>
+                {answer}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type='submit'>Add Question</button>
       </form>
     </section>
